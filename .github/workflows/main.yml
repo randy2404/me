@@ -1,0 +1,37 @@
+name: Windows - RustDesk
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Start Building...
+    runs-on: windows-latest
+    timeout-minutes: 9999
+    
+    steps:
+      - name: Remove Mozilla Firefox (if exists)
+        run: |
+          echo Checking for Mozilla Firefox...
+          powershell -Command "if (Get-WmiObject -Query \"select * from Win32_Product where Name like 'Mozilla Firefox%'\") { Write-Output 'Firefox found. Uninstalling...'; Get-WmiObject -Query \"select * from Win32_Product where Name like 'Mozilla Firefox%'\" | ForEach-Object { $_.Uninstall() } } else { Write-Output 'Firefox not found. Skipping.' }"
+
+      - name: Downloading & Installing Essentials
+        run: |
+          Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/qdyd4p9t6xoabl95n5o3g/Downloads.bat?rlkey=snr74vv1vr8k5suujugvrhjtm&dl=1" -OutFile "Downloads.bat"
+          cmd /c Downloads.bat
+
+      - name: Install Chrome (Stable)
+        run: |
+          Invoke-WebRequest -Uri "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile "chrome_installer.exe"
+          Start-Process chrome_installer.exe -ArgumentList "/silent /install" -NoNewWindow -Wait
+
+      - name: Run Chrome with Anti-Crash Flags
+        run: |
+          Start-Process "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+            -ArgumentList "--no-sandbox --disable-dev-shm-usage --disable-gpu --disable-software-rasterizer --disable-features=VizDisplayCompositor --start-maximized https://www.google.com"
+
+      - name: Log In To AnyDesk
+        run: cmd /c show.bat
+
+      - name: Time Counter
+        run: python time.py
