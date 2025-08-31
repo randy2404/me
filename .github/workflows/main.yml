@@ -13,7 +13,7 @@ jobs:
       - name: Remove Mozilla Firefox (if exists)
         run: |
           echo Checking for Mozilla Firefox...
-          powershell -Command "if (Get-WmiObject -Query \"select * from Win32_Product where Name like 'Mozilla Firefox%'\") { Write-Output 'Firefox found. Uninstalling...'; Get-WmiObject -Query \"select * from Win32_Product where Name like 'Mozilla Firefox%'\" | ForEach-Object { $_.Uninstall() } } else { Write-Output 'Firefox not found. Skipping.' }"
+          wmic product where "Name like 'Mozilla Firefox%'" call uninstall /nointeractive || echo "Firefox not found, skipping..."
 
       - name: Downloading & Installing Essentials
         run: |
